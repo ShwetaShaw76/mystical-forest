@@ -2,17 +2,56 @@
 <html lang="en">
 <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-environment-component"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
 <body>
-    <a-scene>
-        <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-        <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"></a-sphere>
-        <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"></a-cylinder>
-        <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
-        <a-sky color="#87CEEB"></a-sky>
+
+    <a-assets>
+        <a-asset-item id="tree" src="./maple_tree/scene.gltf"></a-asset-item>
+        <a-asset-item id="cyclizar" src="./cyclizar_revamped/scene.gltf"></a-asset-item>
+        <a-asset-item id="raboot" src="./shiny_raboot_official/scene.gltf"></a-asset-item>
+    </a-assets>
+
+    <a-scene background="color:#87CEEB" environment="preset: forest; skyType: atmosphere; skyColor: #87CEEB; groundTexture: grass; groundColor: #5CAC2D;">
+
+        <a-light type="ambient" color="#888"></a-light>
+        <a-light type="directional" intensity="0.8" position="-1 1 2"></a-light>
+        
+        <a-entity gltf-model="#tree" position="1 -0.3 -3" scale="0.2 0.2 0.2" shadow="cast: true"></a-entity>
+
+        <a-entity id="raboot-entity"
+                  gltf-model="#raboot" 
+                  position="10 0.3 -2" 
+                  scale="1 1 1"
+                  shadow="cast: true">
+        </a-entity>
+        
+        <a-entity id="cyclizar-entity"
+                  gltf-model="#cyclizar"
+                  position="15 0.8 -2"
+                  scale="1 1 1"
+                  rotation="60 0 0"
+                  animation-mixer="clip:*; duration:100; loop:repeat; repetitions:infinity; startAt:0 ; timeScale: 1"
+                  >
+        </a-entity>
+        
     </a-scene>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          var rabootEntity = document.querySelector('#raboot-entity');
+          if (rabootEntity) {
+            rabootEntity.addEventListener('model-loaded', function () {
+                this.setAttribute('animation-mixer', 'clip: pm0955_00_00_00280_sleep01_start; loop: repeat; timeScale: 1.0, autoplay: true');
+            });
+          }
+        });
+
+          
+    </script>
+      
 </body>
 </html>

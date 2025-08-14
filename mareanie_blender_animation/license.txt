@@ -1,0 +1,11 @@
+Model Information:
+* title:	Mareanie (Blender Animation)
+* source:	https://sketchfab.com/3d-models/mareanie-blender-animation-cb787fad947a47efa2eb7c8b90f3762c
+* author:	Mariokart07 (https://sketchfab.com/Mariokart07)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Mareanie (Blender Animation)" (https://sketchfab.com/3d-models/mareanie-blender-animation-cb787fad947a47efa2eb7c8b90f3762c) by Mariokart07 (https://sketchfab.com/Mariokart07) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
