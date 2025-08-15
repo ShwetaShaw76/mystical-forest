@@ -5,6 +5,8 @@
     <script src="https://unpkg.com/aframe-environment-component"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7/dist/aframe-extras.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-animation-mixer@6.0.0/dist/aframe-animation-mixer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-physics-system@4.0.1/dist/aframe-physics-system.min.js"></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
 
     <meta charset="UTF-8">
@@ -15,6 +17,7 @@
 
 <a-scene background="color:#87CEEB" 
          environment="preset: forest; skyType: gradient; skyColor: #0b0d33; horizonColor: #1a1a2e; groundTexture: grass; groundColor: #5CAC2D;">
+    <a-scene physics="gravity: -9.8">
 
     <a-assets>
         <a-asset-item id="tree" src="./maple_tree/scene.gltf"></a-asset-item>
@@ -29,7 +32,7 @@
         <a-asset-item id="pot" src="./pot/scene.gltf"></a-asset-item>
         <a-asset-item id="mushroomModel" src="./stylized_mushrooms.glb"></a-asset-item>
         <a-asset-item id="treeanimated" src="./tree_animate.glb"></a-asset-item>
-        <a-asset-item id="thorns" src="./toon_tree_02/scene.gltf"></a-asset-item>
+        <a-asset-item id="thorns" src="./ivy_and_vines.glb"></a-asset-item>
     </a-assets>
 
     <a-light type="ambient" color="#222" intensity="0.3"></a-light>
@@ -45,20 +48,22 @@
     gltf-model="#raboot" 
     position="10 0.3 12" 
     scale="1 1 1"
-    animation-mixer="clip:pm0955_00_00_00000_defaultwait01_loop; loop: repeat;"></a-entity>
+    animation-mixer="clip:pm0955_00_00_00000_defaultwait01_loop; loop: repeat;"
+    dynamic-body></a-entity>
     <a-entity rotation="0 0 0" position="0 0 0">
     <a-entity 
     gltf-model="#cyclizar" 
     position="15 0.3 12" 
     scale="1 1 1" 
-    animation-mixer=" clip :* ; loop: repeat;">
+    animation-mixer=" clip :* ; loop: repeat;"
+    dynamic-body>
     </a-entity>
     </a-entity>
     <a-entity
     gltf-model="#tent"
     position="14 0 -10"
     scale="2 2 2"
-    ></a-entity>
+    static-body></a-entity>
     <a-entity
     gltf-model="#campire"
     position="-10 0.2 12.5"
@@ -81,122 +86,90 @@
     position="0 2 17"
     scale="0.7 0.7 0.7"
     ></a-entity>
-    <a-entity spawn-mushrooms></a-entity>
-    <a-entity spawn-tree></a-entity>
-    <a-entity spawn-thorns></a-entity>
+    <a-entity proximity-spawner="model: #mushroomModel; count: 80; radius: 40; scaleMin: 0.3; scaleMax: 0.5; emissive: random;"></a-entity>
+    <a-entity proximity-spawner="model: #treeanimated; count: 20; radius: 60; scaleMin: 0.4; scaleMax: 0.8;"></a-entity>
+    <a-entity proximity-spawner="model: #thorns; count: 8; radius: 35; emissive: green;"></a-entity>
+
 </a-scene>
 
 <script>
-AFRAME.registerComponent('spawn-mushrooms', {
+AFRAME.registerComponent('proximity-spawner', {
+  schema: {
+    model: { type: 'string' },
+    count: { type: 'int', default: 30 },
+    radius: { type: 'number', default: 50 }, // spawn when within this distance
+    scaleMin: { type: 'number', default: 0.3 },
+    scaleMax: { type: 'number', default: 0.6 },
+    emissive: { type: 'string', default: '' },
+    colors: { type: 'array', default: ['red','blue','yellow','purple','orange','green'] }
+  },
+
   init: function () {
-    const sceneEl = this.el;
-    const colors = ['red', 'blue', 'yellow', 'purple', 'orange', 'green'];
+    this.player = document.querySelector('[camera]');
+    this.objects = [];
+    this.spawnPositions = [];
 
-    for (let i = 0; i < 150; i++) {
-      const mushroom = document.createElement('a-entity');
-      mushroom.setAttribute('gltf-model', '#mushroomModel');
+    // Pre-generate random spawn points
+    for (let i = 0; i < this.data.count; i++) {
+      this.spawnPositions.push({
+        x: (Math.random() - 0.5) * 300,
+        z: (Math.random() - 0.5) * 300,
+        spawned: false
+      });
+    }
+  },
 
-      const x = (Math.random() - 0.5) * 300;
-      const z = (Math.random() - 0.5) * 300;
-      mushroom.setAttribute('position', `${x} 0 ${z}`);
+  tick: function () {
+    const playerPos = this.player.object3D.position;
 
-      const scale = 0.3 + Math.random() * 0.3;
-      mushroom.setAttribute('scale', `${scale} ${scale} ${scale}`);
+    this.spawnPositions.forEach(pos => {
+      const dist = playerPos.distanceTo(new THREE.Vector3(pos.x, 0, pos.z));
 
-      const color = colors[Math.floor(Math.random() * colors.length)];
+      if (dist < this.data.radius && !pos.spawned) {
+        this.spawnObject(pos);
+        pos.spawned = true;
+      } else if (dist > this.data.radius + 20 && pos.spawned) {
+        this.removeObject(pos);
+        pos.spawned = false;
+      }
+    });
+  },
 
-      mushroom.addEventListener('model-loaded', () => {
-        mushroom.getObject3D('mesh').traverse((node) => {
-          if (node.isMesh) {
+  spawnObject: function (pos) {
+    const obj = document.createElement('a-entity');
+    obj.setAttribute('gltf-model', this.data.model);
+    obj.setAttribute('position', `${pos.x} 0 ${pos.z}`);
+
+    const scale = this.data.scaleMin + Math.random() * (this.data.scaleMax - this.data.scaleMin);
+    obj.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+    const color = this.data.colors[Math.floor(Math.random() * this.data.colors.length)];
+
+    obj.addEventListener('model-loaded', () => {
+      obj.getObject3D('mesh').traverse((node) => {
+        if (node.isMesh) {
+          if (this.data.colors.length) {
             node.material.color.set(color);
-            node.material.emissive.set(color);
-            node.material.emissiveIntensity = 2;
           }
-        });
-      });
-
-      sceneEl.appendChild(mushroom);
-    }
-  }
-});
-
-
-AFRAME.registerComponent('spawn-tree', {
-  init: function () {
-    const sceneEl = this.el;
-    const colors = ['red', 'blue', 'yellow', 'purple', 'orange', 'green'];
-
-    for (let i = 0; i < 30; i++) {
-      const tree = document.createElement('a-entity');
-      tree.setAttribute('gltf-model', '#treeanimated');
-
-      const x = (Math.random() - 0.5) * 300;
-      const z = (Math.random() - 0.5) * 300;
-      tree.setAttribute('position', `${x} 0 ${z}`);
-
-      const scale = 0.3 + Math.random() * 0.3;
-      tree.setAttribute('scale', `${scale} ${scale} ${scale}`);
-
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      tree.setAttribute('material', {
-        color: color,
-        emissive: color,
-        emissiveIntensity: 1.5
-      });
-
-      sceneEl.appendChild(tree);
-    }
-  }
-});
-
-AFRAME.registerComponent('spawn-old-trees', {
-  init: function () {
-    const sceneEl = this.el;
-    const colors = ['red', 'blue', 'yellow', 'purple', 'orange', 'green'];
-
-    for (let i = 0; i < 10; i++) {
-      const oldtree = document.createElement('a-entity');
-      oldtree.setAttribute('gltf-model', '#oldtree');
-
-      const x = (Math.random() - 0.5) * 300;
-      const z = (Math.random() - 0.5) * 300;
-      oldtree.setAttribute('position', `${x} 0 ${z}`);
-
-      const scale = 0.3 + Math.random() * 0.3;
-      oldtree.setAttribute('scale', `${scale} ${scale} ${scale}`);
-
-      sceneEl.appendChild(oldtree);
-    }
-  }
-});
-
-AFRAME.registerComponent('spawn-thorns', {
-  init: function () {
-    const sceneEl = this.el;
-
-    for (let i = 0; i < 10; i++) {
-      const thorn = document.createElement('a-entity');
-      thorn.setAttribute('gltf-model', '#thorns');
-
-      const x = (Math.random() - 0.5) * 300;
-      const z = (Math.random() - 0.5) * 300;
-      thorn.setAttribute('position', `${x} 0.2 ${z}`);
-      thorn.setAttribute('scale', '20 20 20'); // bigger so you can see
-
-      thorn.addEventListener('model-loaded', () => {
-        thorn.getObject3D('mesh').traverse((node) => {
-          if (node.isMesh) {
-            node.material.emissive.set('green');
+          if (this.data.emissive) {
+            node.material.emissive.set(this.data.emissive === 'random' ? color : this.data.emissive);
             node.material.emissiveIntensity = 1.5;
           }
-        });
+        }
       });
+    });
 
-      sceneEl.appendChild(thorn);
+    this.el.appendChild(obj);
+    pos.entity = obj;
+  },
+
+  removeObject: function (pos) {
+    if (pos.entity && pos.entity.parentNode) {
+      pos.entity.parentNode.removeChild(pos.entity);
+      pos.entity = null;
     }
   }
 });
-
 </script>
 
 </body>
