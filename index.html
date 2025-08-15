@@ -29,6 +29,7 @@
         <a-asset-item id="pot" src="./pot/scene.gltf"></a-asset-item>
         <a-asset-item id="mushroomModel" src="./stylized_mushrooms.glb"></a-asset-item>
         <a-asset-item id="treeanimated" src="./tree_animate.glb"></a-asset-item>
+        <a-asset-item id="thorns" src="./toon_tree_02/scene.gltf"></a-asset-item>
     </a-assets>
 
     <a-light type="ambient" color="#222" intensity="0.3"></a-light>
@@ -82,7 +83,7 @@
     ></a-entity>
     <a-entity spawn-mushrooms></a-entity>
     <a-entity spawn-tree></a-entity>
-    <a-entity spawn-old-trees></a-entity>
+    <a-entity spawn-thorns></a-entity>
 </a-scene>
 
 <script>
@@ -164,14 +165,34 @@ AFRAME.registerComponent('spawn-old-trees', {
       const scale = 0.3 + Math.random() * 0.3;
       oldtree.setAttribute('scale', `${scale} ${scale} ${scale}`);
 
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      oldtree.setAttribute('material', {
-        color: color,
-        emissive: color,
-        emissiveIntensity: 1.5
+      sceneEl.appendChild(oldtree);
+    }
+  }
+});
+
+AFRAME.registerComponent('spawn-thorns', {
+  init: function () {
+    const sceneEl = this.el;
+
+    for (let i = 0; i < 10; i++) {
+      const thorn = document.createElement('a-entity');
+      thorn.setAttribute('gltf-model', '#thorns');
+
+      const x = (Math.random() - 0.5) * 300;
+      const z = (Math.random() - 0.5) * 300;
+      thorn.setAttribute('position', `${x} 0.2 ${z}`);
+      thorn.setAttribute('scale', '20 20 20'); // bigger so you can see
+
+      thorn.addEventListener('model-loaded', () => {
+        thorn.getObject3D('mesh').traverse((node) => {
+          if (node.isMesh) {
+            node.material.emissive.set('green');
+            node.material.emissiveIntensity = 1.5;
+          }
+        });
       });
 
-      sceneEl.appendChild(oldtree);
+      sceneEl.appendChild(thorn);
     }
   }
 });

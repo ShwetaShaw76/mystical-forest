@@ -1,0 +1,11 @@
+Model Information:
+* title:	Vine Invaded Sign
+* source:	https://sketchfab.com/3d-models/vine-invaded-sign-44f35f321b5b497f808560070bf2a46b
+* author:	Anticipateants (https://sketchfab.com/anticipateants)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Vine Invaded Sign" (https://sketchfab.com/3d-models/vine-invaded-sign-44f35f321b5b497f808560070bf2a46b) by Anticipateants (https://sketchfab.com/anticipateants) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
