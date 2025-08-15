@@ -3,55 +3,70 @@
 <head>
     <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
     <script src="https://unpkg.com/aframe-environment-component"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-animation-mixer@6.0.0/dist/aframe-animation-mixer.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Mystic Forest</title>
 </head>
 <body>
+
+<a-scene background="color:#87CEEB" 
+         environment="preset: forest; skyType: atmosphere; skyColor: #87CEEB; groundTexture: grass; groundColor: #5CAC2D;">
 
     <a-assets>
         <a-asset-item id="tree" src="./maple_tree/scene.gltf"></a-asset-item>
         <a-asset-item id="cyclizar" src="./cyclizar_revamped/scene.gltf"></a-asset-item>
         <a-asset-item id="raboot" src="./shiny_raboot_official/scene.gltf"></a-asset-item>
+        <a-asset-item id="tent" src="./tent_20_mb/scene.gltf"></a-asset-item>
+        <a-asset-item id="campire" src="./cozy_campfire_-_shape_key_animation/scene.gltf"></a-asset-item>
+        <a-asset-item id="lowPolyHand" src="https://cdn.jsdelivr.net/gh/aframevr/aframe-hand-models@master/models/low-poly-hand.glb"></a-asset-item>
+        <a-asset-item id="lowPolyHandLeft" src="https://cdn.jsdelivr.net/gh/aframevr/aframe-hand-models@master/models/low-poly-hand-left.glb"></a-asset-item>
+        <a-asset-item id="lowPolyHandRight" src="https://cdn.jsdelivr.net/gh/aframevr/aframe-hand-models@master/models/low-poly-hand-right.glb"></a-asset-item>
+        <a-asset-item id="table" src="./modern_dining_table/scene.gltf"></a-asset-item>
+        <a-asset-item id="pot" src="./pot/scene.gltf"></a-asset-item>
     </a-assets>
 
-    <a-scene background="color:#87CEEB" environment="preset: forest; skyType: atmosphere; skyColor: #87CEEB; groundTexture: grass; groundColor: #5CAC2D;">
+    <a-light type="ambient" color="#888"></a-light>
+    <a-light type="directional" intensity="0.8" position="-1 1 2"></a-light>
 
-        <a-light type="ambient" color="#888"></a-light>
-        <a-light type="directional" intensity="0.8" position="-1 1 2"></a-light>
-        
-        <a-entity gltf-model="#tree" position="1 -0.3 -3" scale="0.2 0.2 0.2" shadow="cast: true"></a-entity>
+    
+    <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
+    <a-entity hand-controls="hand: left; handModelStyle: lowPoly; color: #ccffcc"></a-entity>
 
-        <a-entity id="raboot-entity"
-                  gltf-model="#raboot" 
-                  position="10 0.3 -2" 
-                  scale="1 1 1"
-                  shadow="cast: true">
-        </a-entity>
-        
-        <a-entity id="cyclizar-entity"
-                  gltf-model="#cyclizar"
-                  position="15 0.8 -2"
-                  scale="1 1 1"
-                  rotation="60 0 0"
-                  animation-mixer="clip:*; duration:100; loop:repeat; repetitions:infinity; startAt:0 ; timeScale: 1"
-                  >
-        </a-entity>
-        
-    </a-scene>
+    <a-entity gltf-model="#tree" position="1 -0.3 -3" scale="0.2 0.2 0.2"></a-entity>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-          var rabootEntity = document.querySelector('#raboot-entity');
-          if (rabootEntity) {
-            rabootEntity.addEventListener('model-loaded', function () {
-                this.setAttribute('animation-mixer', 'clip: pm0955_00_00_00280_sleep01_start; loop: repeat; timeScale: 1.0, autoplay: true');
-            });
-          }
-        });
+    <a-entity 
+    gltf-model="#raboot" 
+    position="10 0.3 12" 
+    scale="1 1 1"
+    animation-mixer="clip:pm0955_00_00_00000_defaultwait01_loop; loop: repeat;"></a-entity>
+    <a-entity rotation="0 0 0" position="0 0 0">
+    <a-entity 
+    gltf-model="#cyclizar" 
+    position="15 0.3 12" 
+    scale="1 1 1" 
+    animation-mixer=" clip :* ; loop: repeat;">
+    </a-entity>
+    </a-entity>
+    <a-entity
+    gltf-model="#tent"
+    position="15 0 -10"
+    scale="2 2 2"
+    ></a-entity>
+    <a-entity
+    gltf-model="#campire"
+    position="-10 0.2 12.5"
+    animation-mixer="clip:*; loop: repeat"
+    ></a-entity>
+    <a-entity
+    gltf-model="#table"
+    position="10 2 15"
+    ></a-entity>
 
-          
-    </script>
-      
+</a-scene>
+
 </body>
 </html>
