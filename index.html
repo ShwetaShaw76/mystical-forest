@@ -14,7 +14,7 @@
 <body>
 
 <a-scene background="color:#87CEEB" 
-         environment="preset: forest; skyType: atmosphere; skyColor: #87CEEB; groundTexture: grass; groundColor: #5CAC2D;">
+         environment="preset: forest; skyType: gradient; skyColor: #0b0d33; horizonColor: #1a1a2e; groundTexture: grass; groundColor: #5CAC2D;">
 
     <a-assets>
         <a-asset-item id="tree" src="./maple_tree/scene.gltf"></a-asset-item>
@@ -25,12 +25,14 @@
         <a-asset-item id="lowPolyHand" src="https://cdn.jsdelivr.net/gh/aframevr/aframe-hand-models@master/models/low-poly-hand.glb"></a-asset-item>
         <a-asset-item id="lowPolyHandLeft" src="https://cdn.jsdelivr.net/gh/aframevr/aframe-hand-models@master/models/low-poly-hand-left.glb"></a-asset-item>
         <a-asset-item id="lowPolyHandRight" src="https://cdn.jsdelivr.net/gh/aframevr/aframe-hand-models@master/models/low-poly-hand-right.glb"></a-asset-item>
-        <a-asset-item id="table" src="./modern_dining_table/scene.gltf"></a-asset-item>
+        <a-asset-item id="table" src="./table_and_chairs/scene.gltf"></a-asset-item>
         <a-asset-item id="pot" src="./pot/scene.gltf"></a-asset-item>
+        <a-asset-item id="mushroomModel" src="./stylized_mushrooms.glb"></a-asset-item>
+        <a-asset-item id="treeanimated" src="./tree_animate.glb"></a-asset-item>
     </a-assets>
 
-    <a-light type="ambient" color="#888"></a-light>
-    <a-light type="directional" intensity="0.8" position="-1 1 2"></a-light>
+    <a-light type="ambient" color="#222" intensity="0.3"></a-light>
+    <a-light type="directional" color="#88aaff" intensity="0.3" position="-1 1 2"></a-light>
 
     
     <a-entity hand-controls="hand: right; handModelStyle: lowPoly; color: #ffcccc"></a-entity>
@@ -53,20 +55,128 @@
     </a-entity>
     <a-entity
     gltf-model="#tent"
-    position="15 0 -10"
+    position="14 0 -10"
     scale="2 2 2"
     ></a-entity>
     <a-entity
     gltf-model="#campire"
     position="-10 0.2 12.5"
+    scale="0.6 0.6 0.6"
     animation-mixer="clip:*; loop: repeat"
     ></a-entity>
+    <a-light type="point" 
+         position="-10 1 12.5" 
+         intensity="2" 
+         distance="15" 
+         color="orange">
+    </a-light>
     <a-entity
     gltf-model="#table"
-    position="10 2 15"
+    position="0 0 17"
+    scale="2.5 2.5 2.5"
     ></a-entity>
-
+    <a-entity
+    gltf-model="#pot"
+    position="0 2 17"
+    scale="0.7 0.7 0.7"
+    ></a-entity>
+    <a-entity spawn-mushrooms></a-entity>
+    <a-entity spawn-tree></a-entity>
+    <a-entity spawn-old-trees></a-entity>
 </a-scene>
+
+<script>
+AFRAME.registerComponent('spawn-mushrooms', {
+  init: function () {
+    const sceneEl = this.el;
+    const colors = ['red', 'blue', 'yellow', 'purple', 'orange', 'green'];
+
+    for (let i = 0; i < 150; i++) {
+      const mushroom = document.createElement('a-entity');
+      mushroom.setAttribute('gltf-model', '#mushroomModel');
+
+      const x = (Math.random() - 0.5) * 300;
+      const z = (Math.random() - 0.5) * 300;
+      mushroom.setAttribute('position', `${x} 0 ${z}`);
+
+      const scale = 0.3 + Math.random() * 0.3;
+      mushroom.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+      const color = colors[Math.floor(Math.random() * colors.length)];
+
+      mushroom.addEventListener('model-loaded', () => {
+        mushroom.getObject3D('mesh').traverse((node) => {
+          if (node.isMesh) {
+            node.material.color.set(color);
+            node.material.emissive.set(color);
+            node.material.emissiveIntensity = 2;
+          }
+        });
+      });
+
+      sceneEl.appendChild(mushroom);
+    }
+  }
+});
+
+
+AFRAME.registerComponent('spawn-tree', {
+  init: function () {
+    const sceneEl = this.el;
+    const colors = ['red', 'blue', 'yellow', 'purple', 'orange', 'green'];
+
+    for (let i = 0; i < 30; i++) {
+      const tree = document.createElement('a-entity');
+      tree.setAttribute('gltf-model', '#treeanimated');
+
+      const x = (Math.random() - 0.5) * 300;
+      const z = (Math.random() - 0.5) * 300;
+      tree.setAttribute('position', `${x} 0 ${z}`);
+
+      const scale = 0.3 + Math.random() * 0.3;
+      tree.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      tree.setAttribute('material', {
+        color: color,
+        emissive: color,
+        emissiveIntensity: 1.5
+      });
+
+      sceneEl.appendChild(tree);
+    }
+  }
+});
+
+AFRAME.registerComponent('spawn-old-trees', {
+  init: function () {
+    const sceneEl = this.el;
+    const colors = ['red', 'blue', 'yellow', 'purple', 'orange', 'green'];
+
+    for (let i = 0; i < 10; i++) {
+      const oldtree = document.createElement('a-entity');
+      oldtree.setAttribute('gltf-model', '#oldtree');
+
+      const x = (Math.random() - 0.5) * 300;
+      const z = (Math.random() - 0.5) * 300;
+      oldtree.setAttribute('position', `${x} 0 ${z}`);
+
+      const scale = 0.3 + Math.random() * 0.3;
+      oldtree.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      oldtree.setAttribute('material', {
+        color: color,
+        emissive: color,
+        emissiveIntensity: 1.5
+      });
+
+      sceneEl.appendChild(oldtree);
+    }
+  }
+});
+
+</script>
 
 </body>
 </html>
