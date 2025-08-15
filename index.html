@@ -16,8 +16,7 @@
 <body>
 
 <a-scene background="color:#87CEEB" 
-         environment="preset: forest; skyType: gradient; skyColor: #0b0d33; horizonColor: #1a1a2e; groundTexture: grass; groundColor: #5CAC2D;">
-    <a-scene physics="gravity: -9.8">
+         environment="preset: forest; skyType: gradient; skyColor: #0b0d33; horizonColor: #1a1a2e; groundTexture: grass; groundColor: #5CAC2D;" physics="gravity: -9.8">
 
     <a-assets>
         <a-asset-item id="tree" src="./maple_tree/scene.gltf"></a-asset-item>
@@ -97,7 +96,7 @@ AFRAME.registerComponent('proximity-spawner', {
   schema: {
     model: { type: 'string' },
     count: { type: 'int', default: 30 },
-    radius: { type: 'number', default: 50 }, // spawn when within this distance
+    radius: { type: 'number', default: 50 }, 
     scaleMin: { type: 'number', default: 0.3 },
     scaleMax: { type: 'number', default: 0.6 },
     emissive: { type: 'string', default: '' },
@@ -109,7 +108,7 @@ AFRAME.registerComponent('proximity-spawner', {
     this.objects = [];
     this.spawnPositions = [];
 
-    // Pre-generate random spawn points
+    
     for (let i = 0; i < this.data.count; i++) {
       this.spawnPositions.push({
         x: (Math.random() - 0.5) * 300,
@@ -171,6 +170,7 @@ AFRAME.registerComponent('proximity-spawner', {
   }
 });
 </script>
+
 
 </body>
 </html>
