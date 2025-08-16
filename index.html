@@ -22,7 +22,7 @@
 
     <a-assets>
         <a-asset-item id="tree" src="./maple_tree/scene.gltf"></a-asset-item>
-        <a-asset-item id="cyclizar" src="./cyclizar_revamped/scene.gltf"></a-asset-item>
+        <a-asset-item id="cyclizar" src="./pokemon_dragapult/scene.gltf"></a-asset-item>
         <a-asset-item id="raboot" src="./shiny_raboot_official/scene.gltf"></a-asset-item>
         <a-asset-item id="tent" src="./tent_20_mb/scene.gltf"></a-asset-item>
         <a-asset-item id="campire" src="./cozy_campfire_-_shape_key_animation/scene.gltf"></a-asset-item>
@@ -49,14 +49,15 @@
     gltf-model="#raboot" 
     position="10 0.3 12" 
     scale="1 1 1"
-    animation-mixer="clip:pm0955_00_00_00000_defaultwait01_loop; loop: repeat;"
+    animation-mixer="clip:pm0955_00_00_00011_defaultidle02; loop: repeat;"
     dynamic-body></a-entity>
     <a-entity rotation="0 0 0" position="0 0 0">
     <a-entity id="ycyclizar"
     gltf-model="#cyclizar" 
-    position="15 0.3 12" 
-    scale="1 1 1" 
-    animation-mixer=" clip :* ; loop: repeat;"
+    position="15 0.5 12" 
+    scale="5 5 5" 
+    animation-mixer=" clip :Armature|Armature|pm0887_00_00_ba10_waitA01|Base Layer; loop: repeat;"
+    dragapult-interaction
     dynamic-body>
     </a-entity>
     </a-entity>
@@ -68,17 +69,17 @@
     static-body></a-entity>
     <a-entity id="sleepButton" position="14 1 -10" sleep-button>
       <a-plane width="1.5" height="0.6" color="#333" class="clickable">
-        <a-text value="💤 [Q] Sleep" align="center" color="#fff" width="4" position="0 0 0.01"></a-text>
+        <a-text value=" Sleep " align="center" color="#fff" width="4" position="0 0 0.01"></a-text>
       </a-plane>
     </a-entity>
 
-    <a-entity id="rig" movement-controls kinematic-body position="0 1.6 0" rotation-reader>
+    <a-entity id="rig" movement-controls kinematic-body="radius:0.3; height:1.6" position="0 1.6 0" rotation-reader>
   
   
   <a-entity 
     camera 
     look-controls
-    position="0 0 0"
+    position="0 1.2 0"
     cursor="fuse: false; rayOrigin: mouse"
     raycaster="objects: .clickable">
 
@@ -92,12 +93,29 @@
   </a-entity>
 </a-entity>
 
-    <a-entity
+    <a-entity id="campfire"
     gltf-model="#campire"
-    position="-10 0.2 12.5"
+    position="-10 0.2 9.5"
     scale="0.6 0.6 0.6"
     animation-mixer="clip:*; loop: repeat"
     static-body></a-entity>
+    <a-entity id="sitButton" position="-10 2 12.5" sit-button>
+  <a-plane 
+    width="1.5" 
+    height="0.6" 
+    color="red" 
+    material="side: double" 
+    class="clickable">
+  </a-plane>
+  <a-text 
+    value="Sit" 
+    align="center" 
+    color="#fff" 
+    width="3" 
+    position="0 0 0.05"
+    side="double">
+  </a-text>
+</a-entity>
     <a-light type="point" 
          position="-10 1 12.5" 
          intensity="2" 
@@ -126,8 +144,8 @@
 AFRAME.registerComponent('character-interaction', {
   schema: {
     distance: { type: 'number', default: 3 },
-    followSpeed: { type: 'number', default: 0.05 },
-    interactDistance: { type: 'number', default: 2.5 } 
+    followSpeed: { type: 'number', default: 0.0025 },
+    interactDistance: { type: 'number', default: 4 } 
   },
 
   init: function () {
@@ -139,7 +157,7 @@ AFRAME.registerComponent('character-interaction', {
     this.isWalking = false;
     this.isPlayingTempAnim = false;
 
-    this.setRabootAnim('pm0955_00_00_00000_defaultwait01_loop', true);
+    this.setRabootAnim('pm0955_00_00_00011_defaultidle02', true);
 
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
   },
@@ -223,6 +241,106 @@ AFRAME.registerComponent('character-interaction', {
         this.setRabootAnim('pm0955_00_00_00000_defaultwait01_loop', true);
         this.isWalking = false;
       }
+    }
+  }
+});
+
+AFRAME.registerComponent('dragapult-interaction', {
+  schema: {
+    interactDistance: { type: 'number', default: 5 } 
+  },
+
+  init: function () {
+    this.cyclizar = document.querySelector('#ycyclizar');
+    this.rig = document.querySelector('#rig');
+
+    
+    this.cyclizar.addEventListener('model-loaded', () => {
+      const clips = this.cyclizar.getObject3D('mesh').animations;
+      console.log("Cyclizar animations:", clips.map(c => c.name));
+    });
+
+    window.addEventListener('keydown', (e) => this.onKeyDown(e));
+    this.isRoaring = false;
+  },
+
+  onKeyDown: function (e) {
+    if (e.key.toLowerCase() === 'e' && !this.isRoaring) {
+      const playerPos = new THREE.Vector3().copy(this.rig.object3D.position);
+      const cyclizarPos = new THREE.Vector3().copy(this.cyclizar.object3D.position);
+      const distance = playerPos.distanceTo(cyclizarPos);
+
+      if (distance <= this.data.interactDistance) {
+        this.isRoaring = true;
+
+        
+        this.cyclizar.setAttribute('animation-mixer', {
+          clip: 'Armature|Armature|pm0887_00_00_ba02_roar01|Base Layer',
+          loop: 'once',
+          crossFadeDuration: 0.3
+        });
+
+        
+        setTimeout(() => {
+          this.cyclizar.setAttribute('animation-mixer', {
+            clip: 'Armature|Armature|pm0887_00_00_ba10_waitA01|Base Layer',
+            loop: 'repeat',
+            crossFadeDuration: 0.3
+          });
+          this.isRoaring = false;
+        }, 2000);
+      }
+    }
+  }
+});
+
+AFRAME.registerComponent('sit-button', {
+  init: function () {
+    const button = this.el;
+    const rig = document.querySelector('#rig');
+    const campfire = document.querySelector('#campfire');
+    const camera = rig.querySelector('[camera]');
+    let isSitting = false;
+
+   
+    button.addEventListener('click', () => toggleSit());
+
+    function toggleSit() {
+      if (!isSitting) {
+        
+        rig.setAttribute('position', {
+          x: rig.object3D.position.x,
+          y: 0.5,
+          z: rig.object3D.position.z
+        });
+
+       
+        const rigPos = new THREE.Vector3().copy(rig.object3D.position);
+        const campfirePos = new THREE.Vector3().copy(campfire.object3D.position);
+        const direction = new THREE.Vector3().subVectors(campfirePos, rigPos);
+        const rotationY = Math.atan2(direction.x, direction.z) * (180 / Math.PI);
+        rig.setAttribute('rotation', { x: 0, y: rotationY, z: 0 });
+
+        
+        rig.removeAttribute('movement-controls');
+        rig.removeAttribute('wasd-controls');
+
+        console.log("Player is sitting and facing the campfire.");
+      } else {
+        
+        rig.setAttribute('position', {
+          x: rig.object3D.position.x,
+          y: 1.6,
+          z: rig.object3D.position.z
+        });
+
+        
+        rig.setAttribute('movement-controls', '');
+        rig.setAttribute('wasd-controls', '');
+
+        console.log("Player is standing.");
+      }
+      isSitting = !isSitting;
     }
   }
 });
