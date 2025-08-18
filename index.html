@@ -103,18 +103,17 @@
   <a-plane 
     width="1.5" 
     height="0.6" 
-    color="red" 
+    color="#333" 
     material="side: double" 
     class="clickable">
-  </a-plane>
-  <a-text 
+    <a-text 
     value="Sit" 
     align="center" 
     color="#fff" 
-    width="3" 
-    position="0 0 0.05"
-    side="double">
-  </a-text>
+    width="2" 
+    position="0 0 0.1" />
+  </a-plane>
+  
 </a-entity>
     <a-light type="point" 
          position="-10 1 12.5" 
@@ -157,7 +156,7 @@ AFRAME.registerComponent('character-interaction', {
     this.isWalking = false;
     this.isPlayingTempAnim = false;
 
-    this.setRabootAnim('pm0955_00_00_00011_defaultidle02', true);
+    this.setRabootAni('pm0955_00_00_00011_defaultidle02', true);
 
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
   },
@@ -165,9 +164,8 @@ AFRAME.registerComponent('character-interaction', {
   onKeyDown: function (e) {
     if (e.key.toLowerCase() === 'q') {
       this.following = !this.following; 
-      console.log("Raboot following:", this.following);
       if (!this.following && !this.isPlayingTempAnim) {
-        this.setRabootAnim('pm0955_00_00_00000_defaultwait01_loop', true); 
+        this.setRabootAni('pm0955_00_00_00000_defaultwait01_loop', true); 
       }
     }
 
@@ -177,34 +175,37 @@ AFRAME.registerComponent('character-interaction', {
   },
 
   tryInteract: function () {
-    const playerPos = new THREE.Vector3().copy(this.player.object3D.position);
-    const rabootPos = new THREE.Vector3().copy(this.raboot.object3D.position);
+    const playerPosition = new THREE.Vector3().copy(this.player.object3D.position);
+    const rabootPosition = new THREE.Vector3().copy(this.raboot.object3D.position);
 
-    const distance = playerPos.distanceTo(rabootPos);
+    const distance = playerPosition.distanceTo(rabootPosition);
 
     if (distance <= this.data.interactDistance && !this.isPlayingTempAnim) {
-      console.log("Interacted with Raboot!");
+
       this.isPlayingTempAnim = true;
 
-      
-      this.setRabootAnim('pm0955_00_00_00550_glad01', false);
+      this.raboot.setAttribute('animation-mixer',{time:0});
+      this.setRabootAni('pm0955_00_00_00550_glad01', false);
 
       
       setTimeout(() => {
         this.isPlayingTempAnim = false;
 
         if (this.following) {
-          this.setRabootAnim('pm0955_00_00_00030_walk01_loop', true);
+          this.setRabootAni('pm0955_00_00_00030_walk01_loop', true);
           this.isWalking = true;
         } else {
-          this.setRabootAnim('pm0955_00_00_00000_defaultwait01_loop', true);
+          this.setRabootAni('pm0955_00_00_00000_defaultwait01_loop', true);
           this.isWalking = false;
         }
       }, 2000);
     }
   },
 
-  setRabootAnim: function (clipName, loop) {
+  setRabootAni: function (clipName, loop) {
+
+    this.raboot.removeAttribute('animation-mixer');
+
     this.raboot.setAttribute('animation-mixer', {
       clip: clipName,
       loop: loop ? 'repeat' : 'once',
@@ -215,30 +216,30 @@ AFRAME.registerComponent('character-interaction', {
   tick: function () {
     if (!this.following || this.isPlayingTempAnim) return;
 
-    const playerPos = new THREE.Vector3().copy(this.player.object3D.position);
-    const rabootPos = new THREE.Vector3().copy(this.raboot.object3D.position);
+    const playerPosition = new THREE.Vector3().copy(this.player.object3D.position);
+    const rabootPosition = new THREE.Vector3().copy(this.raboot.object3D.position);
 
-    playerPos.y = this.groundY;
-    rabootPos.y = this.groundY;
+    playerPosition.y = this.groundY;
+    rabootPosition.y = this.groundY;
 
-    const direction = playerPos.clone().sub(rabootPos);
+    const direction = playerPosition.clone().sub(rabootPosition);
     const distance = direction.length();
 
     if (distance > 1.5) {
       if (!this.isWalking) {
-        this.setRabootAnim('pm0955_00_00_00030_walk01_loop', true);
+        this.setRabootAni('pm0955_00_00_00030_walk01_loop', true);
         this.isWalking = true;
       }
 
       direction.normalize();
-      rabootPos.lerp(playerPos, 0.02);
-      rabootPos.y = this.groundY;
-      this.raboot.object3D.position.copy(rabootPos);
+      rabootPosition.lerp(playerPosition, 0.01);
+      rabootPosition.y = this.groundY;
+      this.raboot.object3D.position.copy(rabootPosition);
 
-      this.raboot.object3D.lookAt(playerPos.x, this.groundY, playerPos.z);
+      this.raboot.object3D.lookAt(playerPosition.x, this.groundY, playerPosition.z);
     } else {
       if (this.isWalking) {
-        this.setRabootAnim('pm0955_00_00_00000_defaultwait01_loop', true);
+        this.setRabootAni('pm0955_00_00_00000_defaultwait01_loop', true);
         this.isWalking = false;
       }
     }
@@ -257,7 +258,6 @@ AFRAME.registerComponent('dragapult-interaction', {
     
     this.cyclizar.addEventListener('model-loaded', () => {
       const clips = this.cyclizar.getObject3D('mesh').animations;
-      console.log("Cyclizar animations:", clips.map(c => c.name));
     });
 
     window.addEventListener('keydown', (e) => this.onKeyDown(e));
@@ -273,6 +273,7 @@ AFRAME.registerComponent('dragapult-interaction', {
       if (distance <= this.data.interactDistance) {
         this.isRoaring = true;
 
+        this.cyclizar.removeAttribute('animation-mixer');
         
         this.cyclizar.setAttribute('animation-mixer', {
           clip: 'Armature|Armature|pm0887_00_00_ba02_roar01|Base Layer',
@@ -309,9 +310,9 @@ AFRAME.registerComponent('sit-button', {
       if (!isSitting) {
         
         rig.setAttribute('position', {
-          x: rig.object3D.position.x,
-          y: 0.5,
-          z: rig.object3D.position.z
+          x: -10,
+          y: 0.9,
+          z: 13.5
         });
 
        
@@ -322,10 +323,7 @@ AFRAME.registerComponent('sit-button', {
         rig.setAttribute('rotation', { x: 0, y: rotationY, z: 0 });
 
         
-        rig.removeAttribute('movement-controls');
-        rig.removeAttribute('wasd-controls');
-
-        console.log("Player is sitting and facing the campfire.");
+        rig.setAttribute('movement-controls','enabled',false);
       } else {
         
         rig.setAttribute('position', {
@@ -335,10 +333,7 @@ AFRAME.registerComponent('sit-button', {
         });
 
         
-        rig.setAttribute('movement-controls', '');
-        rig.setAttribute('wasd-controls', '');
-
-        console.log("Player is standing.");
+        rig.setAttribute('movement-controls', 'enabled', true);
       }
       isSitting = !isSitting;
     }
@@ -430,7 +425,6 @@ AFRAME.registerComponent('sleep-button', {
     const fadeScreen = document.querySelector('#fadeScreen');
 
     button.addEventListener('click', () => {
-      console.log("Sleeping...");
 
       
       fadeScreen.removeAttribute('animation__fadein');
