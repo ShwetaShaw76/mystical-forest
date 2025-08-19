@@ -73,6 +73,12 @@
       </a-plane>
     </a-entity>
 
+    <a-entity sound="src:url(./night-ambience-with-cricket-sound-271304.mp3);autoplay:true;loop:true;volume:3"></a-entity>
+    <a-entity id="sleepSound" sound="src:url(./male-snore.mp3);autoplay:false;loop:true;volume:13" ></a-entity>
+    <a-entity id="fireSound" sound="src:url(./fire-sound.mp3);autoplay:false;loop:true;volume:7"></a-entity>
+    <a-entity id="rabootCry" sound="src:url(./rabootCry.mp3);autoplay:false;loop:false;volume:10"></a-entity>
+    <a-entity id="dragapultCry" sound="src:url(./dragapultCry.mp3);autoplay:false;loop:false;volume:10"></a-entity>
+
     <a-entity id="rig" movement-controls kinematic-body="radius:0.3; height:1.6" position="0 1.6 0" rotation-reader>
   
   
@@ -134,8 +140,8 @@
 </a-entity>
 
     <a-entity proximity-spawner="model: #mushroomModel; count: 80; radius: 40; scaleMin: 0.3; scaleMax: 0.5; emissive: random;"></a-entity>
-    <a-entity proximity-spawner="model: #treeanimated; count: 20; radius: 60; scaleMin: 0.4; scaleMax: 0.8;"></a-entity>
-    <a-entity proximity-spawner="model: #thorns; count: 20; radius: 35; emissive: green;"></a-entity>
+    <a-entity proximity-spawner="model: #treeanimated; count: 30; radius: 60; scaleMin: 0.4; scaleMax: 0.8;"></a-entity>
+    
 
 </a-scene>
 
@@ -150,6 +156,7 @@ AFRAME.registerComponent('character-interaction', {
   init: function () {
     this.player = document.querySelector('#rig');
     this.raboot = document.querySelector('#yraboot');
+    this.sound = document.querySelector('#rabootCry');
 
     this.following = false;
     this.groundY = this.raboot.object3D.position.y;
@@ -177,20 +184,21 @@ AFRAME.registerComponent('character-interaction', {
   tryInteract: function () {
     const playerPosition = new THREE.Vector3().copy(this.player.object3D.position);
     const rabootPosition = new THREE.Vector3().copy(this.raboot.object3D.position);
+    
 
     const distance = playerPosition.distanceTo(rabootPosition);
 
     if (distance <= this.data.interactDistance && !this.isPlayingTempAnim) {
 
       this.isPlayingTempAnim = true;
-
+      this.sound.components.sound.playSound();
       this.raboot.setAttribute('animation-mixer',{time:0});
       this.setRabootAni('pm0955_00_00_00550_glad01', false);
 
       
       setTimeout(() => {
         this.isPlayingTempAnim = false;
-
+        this.sound.components.sound.stopSound();
         if (this.following) {
           this.setRabootAni('pm0955_00_00_00030_walk01_loop', true);
           this.isWalking = true;
@@ -254,6 +262,7 @@ AFRAME.registerComponent('dragapult-interaction', {
   init: function () {
     this.cyclizar = document.querySelector('#ycyclizar');
     this.rig = document.querySelector('#rig');
+    this.sound = document.querySelector('#dragapultCry');
 
     
     this.cyclizar.addEventListener('model-loaded', () => {
@@ -272,7 +281,7 @@ AFRAME.registerComponent('dragapult-interaction', {
 
       if (distance <= this.data.interactDistance) {
         this.isRoaring = true;
-
+        this.sound.components.sound.playSound();
         this.cyclizar.removeAttribute('animation-mixer');
         
         this.cyclizar.setAttribute('animation-mixer', {
@@ -289,6 +298,7 @@ AFRAME.registerComponent('dragapult-interaction', {
             crossFadeDuration: 0.3
           });
           this.isRoaring = false;
+          this.sound.components.sound.stopSound();
         }, 2000);
       }
     }
@@ -298,6 +308,7 @@ AFRAME.registerComponent('dragapult-interaction', {
 AFRAME.registerComponent('sit-button', {
   init: function () {
     const button = this.el;
+    const fireSound = document.querySelector('#fireSound');
     const rig = document.querySelector('#rig');
     const campfire = document.querySelector('#campfire');
     const camera = rig.querySelector('[camera]');
@@ -308,6 +319,8 @@ AFRAME.registerComponent('sit-button', {
 
     function toggleSit() {
       if (!isSitting) {
+
+        fireSound.components.sound.playSound();
         
         rig.setAttribute('position', {
           x: -10,
@@ -325,6 +338,8 @@ AFRAME.registerComponent('sit-button', {
         
         rig.setAttribute('movement-controls','enabled',false);
       } else {
+
+        fireSound.components.sound.stopSound();
         
         rig.setAttribute('position', {
           x: rig.object3D.position.x,
@@ -344,7 +359,7 @@ AFRAME.registerComponent('sit-button', {
 AFRAME.registerComponent('proximity-spawner', {
   schema: {
     model: { type: 'string' },
-    count: { type: 'int', default: 30 },
+    count: { type: 'int', default: 40 },
     radius: { type: 'number', default: 50 },
     scaleMin: { type: 'number', default: 0.3 },
     scaleMax: { type: 'number', default: 0.6 },
@@ -423,10 +438,11 @@ AFRAME.registerComponent('sleep-button', {
   init: function () {
     const button = this.el;
     const fadeScreen = document.querySelector('#fadeScreen');
+    const sleepSound = document.querySelector('#sleepSound');
 
     button.addEventListener('click', () => {
 
-      
+      sleepSound.components.sound.playSound();
       fadeScreen.removeAttribute('animation__fadein');
       fadeScreen.removeAttribute('animation__fadeout');
 
@@ -442,6 +458,7 @@ AFRAME.registerComponent('sleep-button', {
       
       setTimeout(() => {
         fadeScreen.removeAttribute('animation__fadeout');
+        sleepSound.components.sound.stopSound();
         fadeScreen.setAttribute('animation__fadeout', {
           property: 'material.opacity',
           from: 1,
